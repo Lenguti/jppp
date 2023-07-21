@@ -4,40 +4,20 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
-
-	"github.com/jmoiron/sqlx"
-	"github.com/lenguti/jppp/foundation/api"
 )
 
 // Routes - route definitions for v1.
-func Routes(router *api.Router, cfg Config) {
+func Routes(c *Controller) {
 	const version = "v1"
-	c := controller{
-		cfg: cfg,
-		log: router.Log,
-	}
 
-	router.Handle(http.MethodGet, version, "status", c.status)
+	c.Router.Handle(http.MethodGet, version, "status", c.status)
+	c.Router.Handle(http.MethodPost, version, "cages", c.CreateCage)
 }
 
-func (c controller) status(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	q := make(url.Values)
-	q.Set("sslmode", "disable")
-	q.Set("timezone", "utc")
-
-	u := url.URL{
-		Scheme:   "postgres",
-		User:     url.UserPassword(c.cfg.DBUser, c.cfg.DBPass),
-		Host:     "db:5432",
-		Path:     c.cfg.DBName,
-		RawQuery: q.Encode(),
+func (c *Controller) status(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	if err := c.db.Connect(); err != nil {
+		return fmt.Errorf("status: unable to connect to db: %w", err)
 	}
-
-	if _, err := sqlx.Connect("postgres", u.String()); err != nil {
-		return fmt.Errorf("db connect: unable to connect to db: %w", err)
-	}
-
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write([]byte(`{"status": "ok"}`))
 	return nil

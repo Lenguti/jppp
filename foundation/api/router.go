@@ -5,25 +5,20 @@ import (
 	"net/http"
 
 	"github.com/dimfeld/httptreemux"
-	"github.com/rs/zerolog"
 )
 
 // Router - represents api router.
 type Router struct {
-	Log zerolog.Logger
-
 	mux *httptreemux.ContextMux
 }
 
 // NewRouter - initialized new router.
-func NewRouter(log zerolog.Logger) *Router {
+func NewRouter() *Router {
 	m := httptreemux.NewContextMux()
 
 	m.GET("/healthcheck", healthCheck)
 
 	return &Router{
-		Log: log,
-
 		mux: m,
 	}
 }
@@ -47,7 +42,12 @@ func (rr *Router) Handle(method, group, path string, h Handler) {
 func (rr *Router) handle(method string, path string, h Handler) {
 	hh := func(w http.ResponseWriter, r *http.Request) {
 		if err := h(r.Context(), w, r); err != nil {
-			rr.Log.Error().Err(err).Msg("Error handling request.")
+			if e, ok := err.(HTTPError); ok {
+				Respond(w, e.Err.StatusCode, e)
+				return
+			}
+			Respond(w, http.StatusInternalServerError, nil)
+			return
 		}
 	}
 	rr.mux.Handle(method, path, hh)

@@ -8,7 +8,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/lenguti/jppp/app/api/handlers"
 	v1 "github.com/lenguti/jppp/app/api/handlers/v1"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
@@ -23,9 +22,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	ctrl, err := v1.NewController(log, cfg)
+	if err != nil {
+		log.Error().Err(err).Msg("Unable to create v1 controller.")
+		os.Exit(1)
+	}
+	v1.Routes(ctrl)
+
 	srv := &http.Server{
 		Addr:    ":8000",
-		Handler: handlers.NewV1Handler(log, cfg),
+		Handler: ctrl.Router,
 	}
 
 	go func() {

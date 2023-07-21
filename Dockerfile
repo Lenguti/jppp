@@ -8,4 +8,3 @@ WORKDIR    /go/
 COPY       --from=builder /src/bin/jppp ./
 EXPOSE     8000
 ENTRYPOINT ["./jppp"]
-
