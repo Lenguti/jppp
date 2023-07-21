@@ -2,82 +2,36 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/jmoiron/sqlx"
+	"github.com/lenguti/jppp/app/api/handlers"
+	v1 "github.com/lenguti/jppp/app/api/handlers/v1"
 	_ "github.com/lib/pq"
+	"github.com/rs/zerolog"
 )
 
-type Config struct {
-	DBPass  string
-	DBTable string
-	DBUser  string
-}
-
-func NewConfig() (Config, error) {
-	var (
-		cfg Config
-		err error
-	)
-	cfg, err = cfg.ParseEnv()
-	if err != nil {
-		return cfg, err
-	}
-
-	return cfg, nil
-}
-
-func (c Config) ParseEnv() (Config, error) {
-	var (
-		dbUser  = os.Getenv("DB_USER")
-		dbPass  = os.Getenv("DB_PASS")
-		dbTable = os.Getenv("DB_TABLE")
-	)
-
-	switch "" {
-	case dbUser, dbPass, dbTable:
-		return Config{}, fmt.Errorf("parse env: invalid config provided")
-	}
-
-	return Config{
-		DBPass:  dbPass,
-		DBTable: dbTable,
-		DBUser:  dbUser,
-	}, nil
-}
-
-type Router struct {
-	cfg Config
-}
-
 func main() {
-	cfg, err := NewConfig()
+	log := zerolog.New(os.Stdout).With().Timestamp().Logger()
+
+	cfg, err := v1.NewConfig()
 	if err != nil {
-		log.Println("unable to create new config")
-		log.Fatal(err)
+		log.Error().Err(err).Msg("Unable to create new config.")
+		os.Exit(1)
 	}
 
 	srv := &http.Server{
-		Addr: ":8000",
+		Addr:    ":8000",
+		Handler: handlers.NewV1Handler(log, cfg),
 	}
-
-	r := Router{
-		cfg: cfg,
-	}
-
-	http.HandleFunc("/", r.root)
-	http.HandleFunc("/dbping", r.dbping)
 
 	go func() {
+		log.Info().Msg("Starting web server.")
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatal("err")
+			log.Error().Err(err).Msg("Unable to start webserver.")
 		}
 	}()
 
@@ -85,40 +39,14 @@ func main() {
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 
 	sig := <-quit
-	log.Fatal("Received signal, shutting down server: ", sig.String())
+	log.Error().Str("signal", sig.String()).Msg("Received signal, shutting down server.")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal("Error shutting down server.")
+		log.Error().Err(err).Msg("Error shutting down server.")
 	}
 
-	log.Println("Server gracefully shut down.")
-}
-
-func (rr Router) root(w http.ResponseWriter, r *http.Request) {
-	_, _ = w.Write([]byte("Hello world"))
-}
-
-func (rr Router) dbping(w http.ResponseWriter, r *http.Request) {
-	q := make(url.Values)
-	q.Set("sslmode", "disable")
-	q.Set("timezone", "utc")
-
-	u := url.URL{
-		Scheme:   "postgres",
-		User:     url.UserPassword(rr.cfg.DBUser, rr.cfg.DBPass),
-		Host:     "db:5432",
-		Path:     rr.cfg.DBTable,
-		RawQuery: q.Encode(),
-	}
-
-	log.Println("db string: ", u.String())
-	if _, err := sqlx.Connect("postgres", u.String()); err != nil {
-		log.Println("unable to connect db")
-		log.Fatal(err)
-	}
-
-	_, _ = w.Write([]byte("DB OK"))
+	log.Info().Msg("Server gracefully shut down.")
 }
