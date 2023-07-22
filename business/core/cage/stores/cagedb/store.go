@@ -48,3 +48,32 @@ func (s *Store) Create(ctx context.Context, c cage.Cage) error {
 
 	return nil
 }
+
+// Get - will fetch a cage by its id.
+func (s *Store) Get(ctx context.Context, id string) (cage.Cage, error) {
+	const q = `
+	SELECT *
+	FROM cage
+	WHERE id = $1
+	`
+	var out dbCage
+	if err := s.db.Get(ctx, &out, q, id); err != nil {
+		return cage.Cage{}, fmt.Errorf("get: failed to fetch cage: %w", err)
+	}
+
+	return toCoreCage(out), nil
+}
+
+// List - will list all cages.
+func (s *Store) List(ctx context.Context) ([]cage.Cage, error) {
+	const q = `
+	SELECT *
+	FROM cage
+	`
+	var out []dbCage
+	if err := s.db.List(ctx, &out, q); err != nil {
+		return nil, fmt.Errorf("list: failed to list cages: %w", err)
+	}
+
+	return toCoreCages(out), nil
+}

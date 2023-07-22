@@ -35,7 +35,7 @@ func (rr *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Handle - a wrapper around default http.Handle.
 func (rr *Router) Handle(method, group, path string, h Handler) {
-	p := fmt.Sprintf("/%s/%s", group, path)
+	p := fmt.Sprintf("/%s%s", group, path)
 	rr.handle(method, p, h)
 }
 

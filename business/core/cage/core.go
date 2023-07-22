@@ -7,6 +7,8 @@ import (
 // Storer - represents the data layer behavior for cages.
 type Storer interface {
 	Create(ctx context.Context, c Cage) error
+	Get(ctx context.Context, id string) (Cage, error)
+	List(ctx context.Context) ([]Cage, error)
 }
 
 // Core - represents the core business logic for cages.

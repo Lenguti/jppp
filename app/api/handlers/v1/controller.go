@@ -5,6 +5,8 @@ import (
 
 	"github.com/lenguti/jppp/business/core/cage"
 	"github.com/lenguti/jppp/business/core/cage/stores/cagedb"
+	"github.com/lenguti/jppp/business/core/dino"
+	"github.com/lenguti/jppp/business/core/dino/stores/dinodb"
 	"github.com/lenguti/jppp/business/data/db"
 	"github.com/lenguti/jppp/foundation/api"
 	"github.com/rs/zerolog"
@@ -15,6 +17,7 @@ type Controller struct {
 	Log    zerolog.Logger
 	Router *api.Router
 	Cage   *cage.Core
+	Dino   *dino.Core
 
 	db *db.DB
 }
@@ -28,7 +31,7 @@ func NewController(log zerolog.Logger, cfg Config) (*Controller, error) {
 		MaxOpenConns: 10,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("new controller: unable to initialize new cage core: %w", err)
+		return nil, fmt.Errorf("new controller: unable to initialize new db: %w", err)
 	}
 
 	return &Controller{
@@ -36,6 +39,7 @@ func NewController(log zerolog.Logger, cfg Config) (*Controller, error) {
 		Log:    log,
 		Router: api.NewRouter(),
 		Cage:   cage.NewCore(cagedb.NewStore(ddb)),
+		Dino:   dino.NewCore(dinodb.NewStore(ddb)),
 
 		db: ddb,
 	}, nil

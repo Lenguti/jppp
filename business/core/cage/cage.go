@@ -26,3 +26,21 @@ func (c *Core) Create(ctx context.Context, nc NewCage) (Cage, error) {
 
 	return cg, nil
 }
+
+// Get - will featch a cage by its id.
+func (c *Core) Get(ctx context.Context, id uuid.UUID) (Cage, error) {
+	cg, err := c.store.Get(ctx, id.String())
+	if err != nil {
+		return Cage{}, fmt.Errorf("create: failed to fetch cage: %w", err)
+	}
+	return cg, nil
+}
+
+// List - will list all cages.
+func (c *Core) List(ctx context.Context) ([]Cage, error) {
+	cgs, err := c.store.List(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("list: failed to list cages: %w", err)
+	}
+	return cgs, nil
+}

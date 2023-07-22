@@ -1,13 +1,13 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE dinosaur (
-  id uuid not null,
-  cage_id uuid,
+  id uuid NOT NULL,
+  cage_id uuid NULL,
   name text,
   species text,
   diet text,
   PRIMARY KEY (id),
-  fk_cage uuid REFERENCES cage(id)
+  FOREIGN KEY(cage_id) REFERENCES cage(id)
 );
 -- +goose StatementEnd
 

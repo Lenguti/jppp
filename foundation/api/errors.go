@@ -22,16 +22,16 @@ func (e HTTPError) Error() string {
 
 // Error - represents base http error structure.
 type Error struct {
-	Code       string                 `json:"code"`
-	Message    string                 `json:"message"`
-	StatusCode int                    `json:"status_code"`
-	Details    map[string]interface{} `json:"details,omitempty"`
+	Code       string         `json:"code"`
+	Message    string         `json:"message"`
+	StatusCode int            `json:"status_code"`
+	Details    map[string]any `json:"details,omitempty"`
 }
 
 // New - returns a new instance of Error with the provided details.
-func New(statusCode int, code, message string, details map[string]interface{}) HTTPError {
+func New(statusCode int, code, message string, details map[string]any) HTTPError {
 	if details == nil {
-		details = map[string]interface{}{}
+		details = map[string]any{}
 	}
 	return HTTPError{
 		Err: Error{
@@ -93,18 +93,18 @@ func (v *ValidationError) Error() string {
 }
 
 // BadRequestError - returns a new instance of a bad request error.
-func BadRequestError(msg string, err error, details map[string]interface{}) HTTPError {
+func BadRequestError(msg string, err error, details map[string]any) HTTPError {
 	return buildError(http.StatusBadRequest, BadRequest, msg, err, details)
 }
 
 // InternalServerError - returns a new instance of the error with an internal server error message and status codes.
-func InternalServerError(msg string, err error, details map[string]interface{}) HTTPError {
+func InternalServerError(msg string, err error, details map[string]any) HTTPError {
 	return buildError(http.StatusInternalServerError, InternalServer, msg, err, details)
 }
 
-func buildError(statusCode int, code, msg string, err error, details map[string]interface{}) HTTPError {
+func buildError(statusCode int, code, msg string, err error, details map[string]any) HTTPError {
 	if details == nil {
-		details = map[string]interface{}{}
+		details = map[string]any{}
 	}
 	if err != nil {
 		details["error"] = err.Error()

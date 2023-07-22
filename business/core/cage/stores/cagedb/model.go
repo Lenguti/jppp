@@ -29,14 +29,22 @@ func toDBCage(c cage.Cage) dbCage {
 	}
 }
 
-func toCoreCage(dbCage dbCage) cage.Cage {
+func toCoreCages(dbcages []dbCage) []cage.Cage {
+	cages := make([]cage.Cage, 0, len(dbcages))
+	for _, v := range dbcages {
+		cages = append(cages, toCoreCage(v))
+	}
+	return cages
+}
+
+func toCoreCage(dbc dbCage) cage.Cage {
 	return cage.Cage{
-		ID:              uuid.MustParse(dbCage.ID),
-		Type:            cage.Type(dbCage.Type),
-		Capacity:        dbCage.Capacity,
-		CurrentCapacity: dbCage.CurrentCapacity,
-		Status:          cage.Status(dbCage.Status),
-		CreatedAt:       time.Unix(dbCage.CreatedAt, 0),
-		UpdatedAt:       time.Unix(dbCage.UpdateAt, 0),
+		ID:              uuid.MustParse(dbc.ID),
+		Type:            cage.Type(dbc.Type),
+		Capacity:        dbc.Capacity,
+		CurrentCapacity: dbc.CurrentCapacity,
+		Status:          cage.Status(dbc.Status),
+		CreatedAt:       time.Unix(dbc.CreatedAt, 0),
+		UpdatedAt:       time.Unix(dbc.UpdateAt, 0),
 	}
 }
