@@ -1,6 +1,9 @@
 package dino
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 const (
 	DinoSpeciesTyrannosaurus = "Tyrannosaurus"
@@ -26,7 +29,7 @@ var validDinoSpecies = map[string]struct{}{
 }
 
 func ParseSpecies(v string) error {
-	if _, ok := validDinoSpecies[v]; !ok {
+	if _, ok := validDinoSpecies[strings.Title(v)]; !ok {
 		return fmt.Errorf("parse species: invalid dino species")
 	}
 	return nil
@@ -49,7 +52,7 @@ var validDietTypes = map[Diet]struct{}{
 }
 
 func ParseDiet(v string) error {
-	if _, ok := validDietTypes[Diet(v)]; !ok {
+	if _, ok := validDietTypes[Diet(strings.ToUpper(v))]; !ok {
 		return fmt.Errorf("parse diet: invalid diet type")
 	}
 	return nil

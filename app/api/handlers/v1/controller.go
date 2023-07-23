@@ -38,8 +38,8 @@ func NewController(log zerolog.Logger, cfg Config) (*Controller, error) {
 		Config: cfg,
 		Log:    log,
 		Router: api.NewRouter(),
-		Cage:   cage.NewCore(cagedb.NewStore(ddb)),
-		Dino:   dino.NewCore(dinodb.NewStore(ddb)),
+		Cage:   cage.NewCore(cagedb.NewStore(ddb), log),
+		Dino:   dino.NewCore(dinodb.NewStore(ddb), log),
 
 		db: ddb,
 	}, nil

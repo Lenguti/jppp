@@ -3,8 +3,8 @@ package v1
 import (
 	"context"
 	"net/http"
-	"strings"
 
+	"github.com/google/uuid"
 	"github.com/lenguti/jppp/business/core/dino"
 	"github.com/lenguti/jppp/foundation/api"
 )
@@ -23,7 +23,7 @@ func (cdr *CreateDinoRequest) validate() *api.ValidationError {
 		e.Add("name", "is required")
 	}
 
-	if err := dino.ParseSpecies(strings.Title(cdr.Species)); err != nil {
+	if err := dino.ParseSpecies(cdr.Species); err != nil {
 		e.Add("species", "is invalid")
 	}
 
@@ -83,4 +83,49 @@ func (c *Controller) ListDinoSpecies(ctx context.Context, w http.ResponseWriter,
 
 	c.Log.Info().Msg("Successfully listed dino species.")
 	return api.Respond(w, http.StatusOK, ListDinoSpeciesResponse{DinoSpecies: out})
+}
+
+// GetDinoResponse - represents a client get dino response.
+type GetDinoResponse struct {
+	Dinosaur ClientDino `json:"dinosaur"`
+}
+
+// GetDino - invoked by GET /v1/dinosaurs/:id.
+func (c *Controller) GetDino(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	c.Log.Info().Msg("Fetching Dino.")
+
+	idStr := api.PathParam(r, idPathParam)
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		c.Log.Err(err).Msg("Invalid dino id.")
+		return api.BadRequestError("Invalid id.", err, nil)
+	}
+
+	d, err := c.Dino.Get(ctx, id)
+	if err != nil {
+		c.Log.Err(err).Msg("Unable to fetch dino.")
+		return api.InternalServerError("Error.", err, nil)
+	}
+
+	c.Log.Info().Msg("Successfully fetched Dino.")
+	return api.Respond(w, http.StatusOK, GetDinoResponse{Dinosaur: toClientDino(d)})
+}
+
+// ListDinosResponse - represents a client list dinos response.
+type ListDinosResponse struct {
+	Dinosaurs []ClientDino `json:"dinosaurs"`
+}
+
+// ListDinos - invoked by GET /v1/dinosaurs.
+func (c *Controller) ListDinos(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	c.Log.Info().Msg("Listing Dinos.")
+
+	ds, err := c.Dino.List(ctx)
+	if err != nil {
+		c.Log.Err(err).Msg("Unable to list dinos.")
+		return api.InternalServerError("Error.", err, nil)
+	}
+
+	c.Log.Info().Msg("Successfully listed Dino.")
+	return api.Respond(w, http.StatusOK, ListDinosResponse{Dinosaurs: toClientDinos(ds)})
 }

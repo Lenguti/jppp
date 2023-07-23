@@ -1,6 +1,9 @@
 package cage
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Type string
 
@@ -19,7 +22,7 @@ var validCageType = map[Type]struct{}{
 }
 
 func ParseType(v string) error {
-	if _, ok := validCageType[Type(v)]; !ok {
+	if _, ok := validCageType[Type(strings.ToUpper(v))]; !ok {
 		return fmt.Errorf("parse type: invalid cage type")
 	}
 	return nil
@@ -42,7 +45,7 @@ var validCageStatus = map[Status]struct{}{
 }
 
 func ParseStatus(v string) error {
-	if _, ok := validCageStatus[Status(v)]; !ok {
+	if _, ok := validCageStatus[Status(strings.ToUpper(v))]; !ok {
 		return fmt.Errorf("parse status: invalid cage status")
 	}
 	return nil

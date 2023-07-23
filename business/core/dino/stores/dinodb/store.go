@@ -46,8 +46,31 @@ func (s *Store) Create(ctx context.Context, d dino.Dinosaur) error {
 	if err := s.db.Exec(ctx, q, dbDino); err != nil {
 		return fmt.Errorf("create: failed to create dino: %w", err)
 	}
-
 	return nil
+}
+
+// Get - will fetch a dino by its id.
+func (s *Store) Get(ctx context.Context, id string) (dino.Dinosaur, error) {
+	const q = `
+	SELECT *
+	FROM dinosaur
+	WHERE id = $1
+	`
+	var out dbDino
+	if err := s.db.Get(ctx, &out, q, id); err != nil {
+		return dino.Dinosaur{}, fmt.Errorf("get: failed to fetch dino: %w", err)
+	}
+	return toCoreDino(out), nil
+}
+
+// List - will list all dinos.
+func (s *Store) List(ctx context.Context) ([]dino.Dinosaur, error) {
+	q := listClauseBuilder()
+	var out []dbDino
+	if err := s.db.List(ctx, &out, q); err != nil {
+		return nil, fmt.Errorf("list: failed to list dinos: %w", err)
+	}
+	return toCoreDinos(out), nil
 }
 
 // ListByCage - will fetch all dinos associated to the provided cage ids.
@@ -64,24 +87,29 @@ func listClauseBuilder(ids ...string) string {
 	const q = `
 	SELECT *
 	FROM dinosaur
-	%s
 	`
-	const whereClause = "WHERE cage_id = $1"
-	const inClause = "WHERE cage_id IN ("
-
-	if len(ids) == 1 {
-		return fmt.Sprintf(q, whereClause)
-	}
 
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf(q, inClause))
+	b.WriteString(q)
+	if len(ids) == 0 {
+		return b.String()
+	}
+
+	const whereClause = "WHERE cage_id = $1"
+	if len(ids) == 1 {
+		b.WriteString(whereClause)
+		return b.String()
+	}
+
+	const inClause = "WHERE cage_id IN ("
+	b.WriteString(inClause)
 	for i := range ids {
 		b.WriteString(fmt.Sprintf("$%d", i+1))
 		if i != len(ids)-1 {
 			b.WriteString(", ")
 
 		} else {
-			b.WriteString(" )")
+			b.WriteString(")")
 		}
 	}
 	return b.String()

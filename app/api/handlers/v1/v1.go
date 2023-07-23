@@ -6,6 +6,13 @@ import (
 	"net/http"
 )
 
+const idPathParam = "id"
+
+const (
+	queryParamStatus  = "status"
+	queryParamSpecies = "species"
+)
+
 // Routes - route definitions for v1.
 func Routes(c *Controller) {
 	const version = "v1"
@@ -15,9 +22,12 @@ func Routes(c *Controller) {
 	c.Router.Handle(http.MethodPost, version, "/cages", c.CreateCage)
 	c.Router.Handle(http.MethodGet, version, "/cages", c.ListCages)
 	c.Router.Handle(http.MethodGet, version, "/cages/:id", c.GetCage)
+	c.Router.Handle(http.MethodPatch, version, "/cages/:id", c.UpdateCage)
 
 	c.Router.Handle(http.MethodGet, version, "/dinosaurs/species", c.ListDinoSpecies)
 	c.Router.Handle(http.MethodPost, version, "/dinosaurs", c.CreateDino)
+	c.Router.Handle(http.MethodGet, version, "/dinosaurs", c.ListDinos)
+	c.Router.Handle(http.MethodGet, version, "/dinosaurs/:id", c.GetDino)
 }
 
 func (c *Controller) status(ctx context.Context, w http.ResponseWriter, r *http.Request) error {

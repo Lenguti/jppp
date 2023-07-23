@@ -48,3 +48,21 @@ func (c *Core) ListByCageIDs(ctx context.Context, cageIDs ...uuid.UUID) ([]Dinos
 	}
 	return dinos, nil
 }
+
+// Get - will featch a dino by its id.
+func (c *Core) Get(ctx context.Context, id uuid.UUID) (Dinosaur, error) {
+	d, err := c.store.Get(ctx, id.String())
+	if err != nil {
+		return Dinosaur{}, fmt.Errorf("get: failed to fetch dino: %w", err)
+	}
+	return d, nil
+}
+
+// List - will list all dinosaurs.
+func (c *Core) List(ctx context.Context) ([]Dinosaur, error) {
+	ds, err := c.store.List(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("list: failed to list dinos: %w", err)
+	}
+	return ds, nil
+}

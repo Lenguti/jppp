@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/lenguti/jppp/business/core/dino"
 )
@@ -18,8 +20,8 @@ type ClientDino struct {
 func toCoreNewDino(input CreateDinoRequest) dino.NewDino {
 	newDino := dino.NewDino{
 		Name:    input.Name,
-		Species: input.Species,
-		Diet:    dino.Diet(input.Diet),
+		Species: strings.Title(input.Species),
+		Diet:    dino.Diet(strings.ToUpper(input.Diet)),
 	}
 	return newDino
 }

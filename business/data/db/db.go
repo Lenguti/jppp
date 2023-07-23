@@ -44,14 +44,19 @@ func (db *DB) Get(ctx context.Context, data any, query string, val string) error
 }
 
 func (db *DB) List(ctx context.Context, data any, query string, vals ...string) error {
-	var v any
-	switch len(vals) {
-	case 0:
-		return db.sql.SelectContext(ctx, data, query)
-	case 1:
-		v = vals[0]
-	default:
-		v = vals
+	var ivals []any
+	for i := range vals {
+		ivals = append(ivals, vals[i])
 	}
-	return db.sql.SelectContext(ctx, data, query, v)
+	return db.sql.SelectContext(ctx, data, query, ivals...)
+	// var v any
+	// switch len(vals) {
+	// case 0:
+	// 	return db.sql.SelectContext(ctx, data, query)
+	// case 1:
+	// 	v = vals[0]
+	// default:
+	// 	v = vals
+	// }
+	// return db.sql.SelectContext(ctx, data, query, v)
 }
