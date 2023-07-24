@@ -2,10 +2,12 @@ package v1
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/lenguti/jppp/business/core"
 	"github.com/lenguti/jppp/business/core/cage"
 	"github.com/lenguti/jppp/foundation/api"
 )
@@ -37,26 +39,26 @@ type CreateCageResponse struct {
 
 // CreateCage - invoked by POST /v1/cages.
 func (c *Controller) CreateCage(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	c.Log.Info().Msg("Creating Cage.")
+	c.log.Info().Msg("Creating Cage.")
 
 	var input CreateCageRequest
 	if err := api.Decode(r, &input); err != nil {
-		c.Log.Err(err).Msg("Unable to decode create cage request.")
+		c.log.Err(err).Msg("Unable to decode create cage request.")
 		return api.BadRequestError("Invalid input.", err, nil)
 	}
 
 	if validated := input.validate(); !validated.IsClean() {
-		c.Log.Err(validated).Msg("Validation input failed.")
+		c.log.Err(validated).Msg("Validation input failed.")
 		return api.BadRequestError("Invalid input.", validated, validated.Details())
 	}
 
 	cge, err := c.Cage.Create(ctx, toCoreNewCage(input))
 	if err != nil {
-		c.Log.Err(err).Msg("Unable to create cage.")
+		c.log.Err(err).Msg("Unable to create cage.")
 		return api.InternalServerError("Error.", err, nil)
 	}
 
-	c.Log.Info().Msg("Successfully created Cage.")
+	c.log.Info().Msg("Successfully created Cage.")
 	return api.Respond(w, http.StatusCreated, CreateCageResponse{Cage: toClientCage(cge)})
 }
 
@@ -67,22 +69,22 @@ type GetCageResponse struct {
 
 // GetCage - invoked by GET /v1/cages/:id.
 func (c *Controller) GetCage(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	c.Log.Info().Msg("Fetching Cage.")
+	c.log.Info().Msg("Fetching Cage.")
 
 	idStr := api.PathParam(r, idPathParam)
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.Log.Err(err).Msg("Invalid cage id.")
+		c.log.Err(err).Msg("Invalid cage id.")
 		return api.BadRequestError("Invalid id.", err, nil)
 	}
 
 	cge, err := c.Cage.Get(ctx, id)
 	if err != nil {
-		c.Log.Err(err).Msg("Unable to fetch cage.")
+		c.log.Err(err).Msg("Unable to fetch cage.")
 		return api.InternalServerError("Error.", err, nil)
 	}
 
-	c.Log.Info().Msg("Successfully fetched Cage.")
+	c.log.Info().Msg("Successfully fetched Cage.")
 	return api.Respond(w, http.StatusOK, GetCageResponse{Cage: toClientCage(cge)})
 }
 
@@ -93,27 +95,26 @@ type ListCagesResponse struct {
 
 // ListCages - invoked by GET /v1/cages.
 func (c *Controller) ListCages(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	c.Log.Info().Msg("Listing Cages.")
+	c.log.Info().Msg("Listing Cages.")
 
 	status := api.QueryParam(r, queryParamStatus)
-	var filters []cage.Filter
+	var filters []core.Filter
 	if status != "" {
 		if err := cage.ParseStatus(status); err != nil {
-			c.Log.Err(err).Msg("Invalid cage status filter.")
+			c.log.Err(err).Msg("Invalid cage status filter.")
 			return api.BadRequestError("Invalid cage status filter.", err, nil)
 		}
-		filters = append(filters, cage.Filter{Key: queryParamStatus, Value: strings.ToUpper(status)})
+		filters = append(filters, core.Filter{Key: queryParamStatus, Value: strings.ToUpper(status)})
 	}
 
 	cgs, err := c.Cage.List(ctx, filters...)
 	if err != nil {
-		c.Log.Err(err).Msg("Unable to list cages.")
+		c.log.Err(err).Msg("Unable to list cages.")
 		return api.InternalServerError("Error.", err, nil)
 	}
 
-	out := toClientCages(cgs)
-	c.Log.Info().Msg("Successfully listed Cage.")
-	return api.Respond(w, http.StatusOK, ListCagesResponse{Cages: out})
+	c.log.Info().Msg("Successfully listed Cage.")
+	return api.Respond(w, http.StatusOK, ListCagesResponse{Cages: toClientCages(cgs)})
 }
 
 // UpdateCageRequest - represents input for updating a cage.
@@ -138,48 +139,35 @@ type UpdateCageResponse struct {
 
 // UpdateCage - invoked by PATCH /v1/cages/id.
 func (c *Controller) UpdateCage(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	c.Log.Info().Msg("Updating Cage.")
+	c.log.Info().Msg("Updating Cage.")
 
 	var input UpdateCageRequest
 	if err := api.Decode(r, &input); err != nil {
-		c.Log.Err(err).Msg("Unable to decode update cage request.")
+		c.log.Err(err).Msg("Unable to decode update cage request.")
 		return api.BadRequestError("Invalid input.", err, nil)
 	}
 
 	if validated := input.validate(); !validated.IsClean() {
-		c.Log.Err(validated).Msg("Validation input failed.")
+		c.log.Err(validated).Msg("Validation input failed.")
 		return api.BadRequestError("Invalid input.", validated, validated.Details())
 	}
 
 	idStr := api.PathParam(r, idPathParam)
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.Log.Err(err).Msg("Invalid cage id.")
+		c.log.Err(err).Msg("Invalid cage id.")
 		return api.BadRequestError("Invalid id.", err, nil)
 	}
 
-	cge, err := c.Cage.Get(ctx, id)
+	cge, err := c.Cage.UpdateStatus(ctx, id, cage.Status(strings.ToUpper(input.Status)))
 	if err != nil {
-		c.Log.Err(err).Msg("Unable to get cage.")
+		c.log.Err(err).Msg("Unable to update cage.")
+		if errors.Is(err, core.ErrPowerDownCage) {
+			return api.BadRequestError(err.Error(), err, nil)
+		}
 		return api.InternalServerError("Error.", err, nil)
 	}
 
-	nStatus := cage.Status(strings.ToUpper(input.Status))
-	if cge.Status == nStatus {
-		return api.Respond(w, http.StatusNoContent, nil)
-	}
-
-	if nStatus == cage.CageStatusDown && cge.CurrentCapacity > 0 {
-		c.Log.Err(err).Msg("Invalid cage id.")
-		return api.BadRequestError("Unable to power down cage with dinosaurs.", err, nil)
-	}
-
-	cge, err = c.Cage.UpdateStatus(ctx, cge, nStatus)
-	if err != nil {
-		c.Log.Err(err).Msg("Unable to update cage.")
-		return api.InternalServerError("Error.", err, nil)
-	}
-
-	c.Log.Info().Msg("Successfully updated Cage.")
+	c.log.Info().Msg("Successfully updated Cage.")
 	return api.Respond(w, http.StatusOK, UpdateCageResponse{Cage: toClientCage(cge)})
 }

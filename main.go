@@ -27,11 +27,10 @@ func main() {
 		log.Error().Err(err).Msg("Unable to create v1 controller.")
 		os.Exit(1)
 	}
-	v1.Routes(ctrl)
 
 	srv := &http.Server{
 		Addr:    ":8000",
-		Handler: ctrl.Router,
+		Handler: ctrl.Routes(),
 	}
 
 	go func() {

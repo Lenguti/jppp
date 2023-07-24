@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lenguti/jppp/business/core"
 )
 
 // Create - will create a new cage.
@@ -23,7 +24,6 @@ func (c *Core) Create(ctx context.Context, nc NewCage) (Cage, error) {
 	if err := c.store.Create(ctx, cg); err != nil {
 		return Cage{}, fmt.Errorf("create: failed to create cage: %w", err)
 	}
-
 	return cg, nil
 }
 
@@ -36,14 +36,8 @@ func (c *Core) Get(ctx context.Context, id uuid.UUID) (Cage, error) {
 	return cg, nil
 }
 
-// Filter - represents queryable fields.
-type Filter struct {
-	Key   string
-	Value string
-}
-
 // List - will list all cages.
-func (c *Core) List(ctx context.Context, filters ...Filter) ([]Cage, error) {
+func (c *Core) List(ctx context.Context, filters ...core.Filter) ([]Cage, error) {
 	c.log.Info().Fields(map[string]any{"filters": filters}).Msg("Listing cages.")
 	cgs, err := c.store.List(ctx, filters...)
 	if err != nil {
@@ -53,12 +47,26 @@ func (c *Core) List(ctx context.Context, filters ...Filter) ([]Cage, error) {
 }
 
 // UpdateStatus - will update the status of the provided cage.
-func (c *Core) UpdateStatus(ctx context.Context, cge Cage, status Status) (Cage, error) {
+func (c *Core) UpdateStatus(ctx context.Context, id uuid.UUID, status Status) (Cage, error) {
+	cge, err := c.Get(ctx, id)
+	if err != nil {
+		return Cage{}, fmt.Errorf("update status: unable to fetch cage: %w", err)
+	}
+
+	if cge.Status == status {
+		return cge, nil
+	}
+
+	if status == CageStatusDown && cge.CurrentCapacity > 0 {
+		return Cage{}, core.ErrPowerDownCage
+	}
+
 	now := time.Now().UTC()
 	cge.Status = status
 	cge.UpdatedAt = now
-	if err := c.store.UpdateStatus(ctx, cge.ID.String(), status.String(), now); err != nil {
+	if err := c.store.UpdateStatus(ctx, cge.ID.String(), cge.Status.String(), cge.UpdatedAt); err != nil {
 		return Cage{}, fmt.Errorf("update status: failed to update cage: %w", err)
 	}
+
 	return cge, nil
 }

@@ -13,13 +13,13 @@ import (
 )
 
 type Controller struct {
-	Config Config
-	Log    zerolog.Logger
-	Router *api.Router
-	Cage   *cage.Core
-	Dino   *dino.Core
+	Cage *cage.Core
+	Dino *dino.Core
 
-	db *db.DB
+	db     *db.DB
+	config Config
+	log    zerolog.Logger
+	router *api.Router
 }
 
 func NewController(log zerolog.Logger, cfg Config) (*Controller, error) {
@@ -35,12 +35,12 @@ func NewController(log zerolog.Logger, cfg Config) (*Controller, error) {
 	}
 
 	return &Controller{
-		Config: cfg,
-		Log:    log,
-		Router: api.NewRouter(),
-		Cage:   cage.NewCore(cagedb.NewStore(ddb), log),
-		Dino:   dino.NewCore(dinodb.NewStore(ddb), log),
+		Cage: cage.NewCore(cagedb.NewStore(ddb), log),
+		Dino: dino.NewCore(dinodb.NewStore(ddb), log),
 
-		db: ddb,
+		db:     ddb,
+		config: cfg,
+		log:    log,
+		router: api.NewRouter(),
 	}, nil
 }

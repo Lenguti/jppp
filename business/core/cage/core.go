@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/lenguti/jppp/business/core"
 	"github.com/rs/zerolog"
 )
 
@@ -11,7 +12,7 @@ import (
 type Storer interface {
 	Create(ctx context.Context, c Cage) error
 	Get(ctx context.Context, id string) (Cage, error)
-	List(ctx context.Context, filters ...Filter) ([]Cage, error)
+	List(ctx context.Context, filters ...core.Filter) ([]Cage, error)
 	UpdateStatus(ctx context.Context, id, status string, ts time.Time) error
 }
 

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lenguti/jppp/business/core"
 	"github.com/lenguti/jppp/business/core/cage"
 	"github.com/lenguti/jppp/business/data/db"
 )
@@ -80,7 +81,7 @@ func (s *Store) Get(ctx context.Context, id string) (cage.Cage, error) {
 }
 
 // List - will list all cages.
-func (s *Store) List(ctx context.Context, filters ...cage.Filter) ([]cage.Cage, error) {
+func (s *Store) List(ctx context.Context, filters ...core.Filter) ([]cage.Cage, error) {
 	q, vals := listClauseBuilder(filters...)
 	var out []dbCage
 	if err := s.db.List(ctx, &out, q, vals...); err != nil {
@@ -89,7 +90,7 @@ func (s *Store) List(ctx context.Context, filters ...cage.Filter) ([]cage.Cage, 
 	return toCoreCages(out), nil
 }
 
-func listClauseBuilder(filters ...cage.Filter) (string, []string) {
+func listClauseBuilder(filters ...core.Filter) (string, []string) {
 	const q = `
 	SELECT *
 	FROM cage
