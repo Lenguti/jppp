@@ -34,9 +34,12 @@ func NewController(log zerolog.Logger, cfg Config) (*Controller, error) {
 		return nil, fmt.Errorf("new controller: unable to initialize new db: %w", err)
 	}
 
+	dc := dino.NewCore(dinodb.NewStore(ddb), log)
+	cc := cage.NewCore(cagedb.NewStore(ddb), log, dc)
+
 	return &Controller{
-		Cage: cage.NewCore(cagedb.NewStore(ddb), log),
-		Dino: dino.NewCore(dinodb.NewStore(ddb), log),
+		Cage: cc,
+		Dino: dc,
 
 		db:     ddb,
 		config: cfg,

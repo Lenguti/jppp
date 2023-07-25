@@ -137,7 +137,7 @@ type UpdateCageResponse struct {
 	Cage ClientCage `json:"cage"`
 }
 
-// UpdateCage - invoked by PATCH /v1/cages/id.
+// UpdateCage - invoked by PATCH /v1/cages/:id.
 func (c *Controller) UpdateCage(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	c.log.Info().Msg("Updating Cage.")
 
@@ -170,4 +170,70 @@ func (c *Controller) UpdateCage(ctx context.Context, w http.ResponseWriter, r *h
 
 	c.log.Info().Msg("Successfully updated Cage.")
 	return api.Respond(w, http.StatusOK, UpdateCageResponse{Cage: toClientCage(cge)})
+}
+
+// AddDinosaurToCageResponse - represents a client add dino to cage response.
+type AddDinosaurToCageResponse struct {
+	Cage ClientCage `json:"cage"`
+}
+
+// AddDinosaurToCage - invoked by PATCH /v1/cages/:id/dinosaurs/:id.
+func (c *Controller) AddDinosaurToCage(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	c.log.Info().Msg("Adding Dinosaur to Cage.")
+
+	idStr := api.PathParam(r, idPathParam)
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		c.log.Err(err).Msg("Invalid cage id.")
+		return api.BadRequestError("Invalid cage id.", err, nil)
+	}
+
+	dinoIdStr := api.PathParam(r, dinoIDPathParam)
+	dinoID, err := uuid.Parse(dinoIdStr)
+	if err != nil {
+		c.log.Err(err).Msg("Invalid dino id.")
+		return api.BadRequestError("Invalid dinosaur id.", err, nil)
+	}
+
+	cge, err := c.Cage.AddDino(ctx, id, dinoID)
+	if err != nil {
+		c.log.Err(err).Msg("Unable to add dino to cage.")
+		return api.InternalServerError("Error.", err, nil)
+	}
+
+	c.log.Info().Msg("Successfully updated Dinosaur.")
+	return api.Respond(w, http.StatusOK, AddDinosaurToCageResponse{Cage: toClientCage(cge)})
+}
+
+// RemoveDinosaurFromCageResponse - represents a client remove dino from cage response.
+type RemoveDinosaurFromCageResponse struct {
+	Cage ClientCage `json:"cage"`
+}
+
+// RemoveDinosaurFromCage - invoked by DELETE /v1/cages/:id/dinosaurs/:id.
+func (c *Controller) RemoveDinosaurFromCage(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	c.log.Info().Msg("Removing Dinosaur from Cage.")
+
+	idStr := api.PathParam(r, idPathParam)
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		c.log.Err(err).Msg("Invalid cage id.")
+		return api.BadRequestError("Invalid cage id.", err, nil)
+	}
+
+	dinoIdStr := api.PathParam(r, dinoIDPathParam)
+	dinoID, err := uuid.Parse(dinoIdStr)
+	if err != nil {
+		c.log.Err(err).Msg("Invalid dino id.")
+		return api.BadRequestError("Invalid dinosaur id.", err, nil)
+	}
+
+	cge, err := c.Cage.RemoveDino(ctx, id, dinoID)
+	if err != nil {
+		c.log.Err(err).Msg("Unable to add remove dino from cage.")
+		return api.InternalServerError("Error.", err, nil)
+	}
+
+	c.log.Info().Msg("Successfully removed Dinosaur.")
+	return api.Respond(w, http.StatusOK, RemoveDinosaurFromCageResponse{Cage: toClientCage(cge)})
 }

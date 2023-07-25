@@ -11,4 +11,19 @@ func (e Error) Error() string {
 const (
 	// ErrPowerDownCage represents a power down cage error.
 	ErrPowerDownCage = Error("unable to power down cage whith active dinosaurs")
+
+	// ErrInvalidCagePowerDown represents an unable to add dino to powered down cage error.
+	ErrInvalidCagePowerDown = Error("unable to add dinosaurs to powered down cage")
+
+	// ErrInvalidCageAtCapacity represents an unable to add dino to full cage error.
+	ErrInvalidCageAtCapacity = Error("unable to add dinosaurs to cage at capacity")
+
+	// ErrInvalidCageInvalidType represents an unable to add dino to diet conflict error.
+	ErrInvalidCageInvalidType = Error("unable to add dinosaurs to cage with different types")
+
+	// ErrInvalidCageInvalidSpecies represents an unable to add dino with species conflict error.
+	ErrInvalidCageInvalidSpecies = Error("unable to add dinosaurs to cage with different species")
+
+	// ErrInvalidCageInvalidRemoval represents an unable to remove dino from cage error.
+	ErrInvalidCageInvalidRemoval = Error("unable to remove dinosaurs from an empty cage")
 )

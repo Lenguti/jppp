@@ -80,6 +80,60 @@ func (s *Store) Get(ctx context.Context, id string) (cage.Cage, error) {
 	return toCoreCage(out), nil
 }
 
+// AddDino - will update the cage current capacity, updated ts and the dinos cage identifier.
+func (s *Store) AddDino(ctx context.Context, c cage.Cage, dinoID string) error {
+	dbCage := toDBCage(c)
+	const cageQuery = `
+	UPDATE cage
+	SET
+	current_capacity = $1,
+	updated_at = $2
+	WHERE id = $3
+	`
+	const dinoQuery = `
+	UPDATE dinosaur
+	SET
+	cage_id = $1,
+	updated_at = $2
+	WHERE id = $3
+	`
+	tx := s.db.BeginTx(ctx)
+	defer tx.Rollback()
+	tx.MustExecContext(ctx, cageQuery, dbCage.CurrentCapacity, dbCage.UpdateAt, dbCage.ID)
+	tx.MustExecContext(ctx, dinoQuery, dbCage.ID, dbCage.UpdateAt, dinoID)
+	if err := s.db.CommitTx(tx); err != nil {
+		return fmt.Errorf("add dino: failed to commit tx: %w", err)
+	}
+	return nil
+}
+
+// RemoveDino - will update the cage current capacity, updated ts and the dinos cage identifier
+func (s *Store) RemoveDino(ctx context.Context, c cage.Cage, dinoID string) error {
+	dbCage := toDBCage(c)
+	const cageQuery = `
+	UPDATE cage
+	SET
+	current_capacity = $1,
+	updated_at = $2
+	WHERE id = $3
+	`
+	const dinoQuery = `
+	UPDATE dinosaur
+	SET
+	cage_id = NULL,
+	updated_at = $1
+	WHERE id = $2
+	`
+	tx := s.db.BeginTx(ctx)
+	defer tx.Rollback()
+	tx.MustExecContext(ctx, cageQuery, dbCage.CurrentCapacity, dbCage.UpdateAt, dbCage.ID)
+	tx.MustExecContext(ctx, dinoQuery, dbCage.UpdateAt, dinoID)
+	if err := s.db.CommitTx(tx); err != nil {
+		return fmt.Errorf("remove dino: failed to commit tx: %w", err)
+	}
+	return nil
+}
+
 // List - will list all cages.
 func (s *Store) List(ctx context.Context, filters ...core.Filter) ([]cage.Cage, error) {
 	q, vals := listClauseBuilder(filters...)

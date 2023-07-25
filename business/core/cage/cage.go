@@ -70,3 +70,76 @@ func (c *Core) UpdateStatus(ctx context.Context, id uuid.UUID, status Status) (C
 
 	return cge, nil
 }
+
+// AddDino - will add the provided dino to the provided cage and upate the current capacity.
+func (c *Core) AddDino(ctx context.Context, id uuid.UUID, dinoID uuid.UUID) (Cage, error) {
+	cge, err := c.Get(ctx, id)
+	if err != nil {
+		return Cage{}, fmt.Errorf("add dino: unable to fetch cage: %w", err)
+	}
+
+	if cge.Status == CageStatusDown {
+		return Cage{}, core.ErrInvalidCagePowerDown
+	}
+
+	if cge.CurrentCapacity == cge.Capacity {
+		return Cage{}, core.ErrInvalidCageAtCapacity
+	}
+
+	d, err := c.dino.Get(ctx, dinoID)
+	if err != nil {
+		return Cage{}, fmt.Errorf("add dino: unable to fetch dino: %w", err)
+	}
+
+	if cge.Type != Type(d.Diet) {
+		return Cage{}, core.ErrInvalidCageInvalidType
+	}
+
+	if cge.Type == CageTypeCarnivore && cge.CurrentCapacity > 0 {
+		cagedDinos, err := c.dino.ListByCageID(ctx, id)
+		if err != nil {
+			return Cage{}, fmt.Errorf("add dino: unable to list dinos for cage: %w", err)
+		}
+
+		for _, dno := range cagedDinos {
+			if dno.Species != d.Species {
+				return Cage{}, core.ErrInvalidCageInvalidSpecies
+			}
+		}
+	}
+
+	now := time.Now().UTC()
+	cge.CurrentCapacity++
+	cge.UpdatedAt = now
+	if err := c.store.AddDino(ctx, cge, d.ID.String()); err != nil {
+		return Cage{}, fmt.Errorf("add dino: failed to add dino to cage: %w", err)
+	}
+
+	return cge, nil
+}
+
+// RemoveDino - will remove the provided dino from the provided cage and upate the current capacity.
+func (c *Core) RemoveDino(ctx context.Context, id uuid.UUID, dinoID uuid.UUID) (Cage, error) {
+	cge, err := c.Get(ctx, id)
+	if err != nil {
+		return Cage{}, fmt.Errorf("add dino: unable to fetch cage: %w", err)
+	}
+
+	if cge.CurrentCapacity == 0 {
+		return Cage{}, core.ErrInvalidCageInvalidRemoval
+	}
+
+	d, err := c.dino.Get(ctx, dinoID)
+	if err != nil {
+		return Cage{}, fmt.Errorf("add dino: unable to fetch dino: %w", err)
+	}
+
+	now := time.Now().UTC()
+	cge.CurrentCapacity--
+	cge.UpdatedAt = now
+	if err := c.store.RemoveDino(ctx, cge, d.ID.String()); err != nil {
+		return Cage{}, fmt.Errorf("remove dino: failed to remove dino from cage: %w", err)
+	}
+
+	return cge, nil
+}

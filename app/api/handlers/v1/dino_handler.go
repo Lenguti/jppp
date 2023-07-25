@@ -152,7 +152,7 @@ type UpdateDinoResponse struct {
 	Dinosaur ClientDino `json:"dinosaur"`
 }
 
-// UpdateDino - invoked by PATCH /v1/dinosaurs/id.
+// UpdateDino - invoked by PATCH /v1/dinosaurs/:id.
 func (c *Controller) UpdateDino(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	c.log.Info().Msg("Updating Dinosaur.")
 

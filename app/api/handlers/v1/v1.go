@@ -8,7 +8,10 @@ import (
 	"github.com/lenguti/jppp/foundation/api"
 )
 
-const idPathParam = "id"
+const (
+	idPathParam     = "id"
+	dinoIDPathParam = "dinoId"
+)
 
 const (
 	queryParamStatus  = "status"
@@ -25,6 +28,8 @@ func (c *Controller) Routes() *api.Router {
 	c.router.Handle(http.MethodGet, version, "/cages", c.ListCages)
 	c.router.Handle(http.MethodGet, version, "/cages/:id", c.GetCage)
 	c.router.Handle(http.MethodPatch, version, "/cages/:id", c.UpdateCage)
+	c.router.Handle(http.MethodPatch, version, "/cages/:id/dinosaurs/:dinoId", c.AddDinosaurToCage)
+	c.router.Handle(http.MethodDelete, version, "/cages/:id/dinosaurs/:dinoId", c.RemoveDinosaurFromCage)
 	c.router.Handle(http.MethodGet, version, "/cages/:id/dinosaurs", c.ListCageDinosaurs)
 
 	c.router.Handle(http.MethodGet, version, "/dinosaurs/species", c.ListDinoSpecies)

@@ -49,14 +49,12 @@ func (db *DB) List(ctx context.Context, data any, query string, vals ...string) 
 		ivals = append(ivals, vals[i])
 	}
 	return db.sql.SelectContext(ctx, data, query, ivals...)
-	// var v any
-	// switch len(vals) {
-	// case 0:
-	// 	return db.sql.SelectContext(ctx, data, query)
-	// case 1:
-	// 	v = vals[0]
-	// default:
-	// 	v = vals
-	// }
-	// return db.sql.SelectContext(ctx, data, query, v)
+}
+
+func (db *DB) BeginTx(ctx context.Context) *sqlx.Tx {
+	return db.sql.MustBeginTx(ctx, nil)
+}
+
+func (db *DB) CommitTx(tx *sqlx.Tx) error {
+	return tx.Commit()
 }
