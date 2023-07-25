@@ -22,18 +22,18 @@ Once the webserver has been validated you can run migrations by running:
 ```
 
 ### Routes
-POST	/v1/cages\n
-POST	/v1/dinosaurs\n
-PATCH	/v1/cages/:id\n
-PATCH	/v1/dinosaurs/:id\n
-PATCH	/v1/cages/:id/dinosaurs/:id\n
-DELETE	/v1/cages/:id/dinosaurs/:id\n
-GET	    /v1/cages\n
-GET	    /v1/cages/:id/dinosaurs\n
-GET	    /v1/dinosaurs\n
-GET	    /v1/cage/:id\n
-GET	    /v1/dinosaur/:id\n
-GET	    /v1/dinoaurs/species\n
+POST	/v1/cages<br>
+POST	/v1/dinosaurs<br>
+PATCH	/v1/cages/:id<br>
+PATCH	/v1/dinosaurs/:id<br>
+PATCH	/v1/cages/:id/dinosaurs/:id<br>
+DELETE	/v1/cages/:id/dinosaurs/:id<br>
+GET	    /v1/cages<br>
+GET	    /v1/cages/:id/dinosaurs<br>
+GET	    /v1/dinosaurs<br>
+GET	    /v1/cage/:id<br>
+GET	    /v1/dinosaur/:id<br>
+GET	    /v1/dinoaurs/species<br>
 
 ### MODELS
 ```
