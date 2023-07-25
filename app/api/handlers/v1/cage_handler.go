@@ -208,7 +208,7 @@ func (c *Controller) AddDinosaurToCage(ctx context.Context, w http.ResponseWrite
 		return api.InternalServerError("Error.", err, nil)
 	}
 
-	c.log.Info().Msg("Successfully updated Dinosaur.")
+	c.log.Info().Msg("Successfully added Dinosaur to Cage.")
 	return api.Respond(w, http.StatusOK, AddDinosaurToCageResponse{Cage: toClientCage(cge)})
 }
 
@@ -237,13 +237,13 @@ func (c *Controller) RemoveDinosaurFromCage(ctx context.Context, w http.Response
 
 	cge, err := c.Cage.RemoveDino(ctx, id, dinoID)
 	if err != nil {
-		c.log.Err(err).Msg("Unable to add remove dino from cage.")
+		c.log.Err(err).Msg("Unable to remove dino from cage.")
 		if errors.Is(err, core.ErrInvalidCageInvalidRemoval) {
 			return api.BadRequestError(err.Error(), err, nil)
 		}
 		return api.InternalServerError("Error.", err, nil)
 	}
 
-	c.log.Info().Msg("Successfully removed Dinosaur.")
+	c.log.Info().Msg("Successfully removed Dinosaur from Cage.")
 	return api.Respond(w, http.StatusOK, RemoveDinosaurFromCageResponse{Cage: toClientCage(cge)})
 }

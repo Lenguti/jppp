@@ -98,6 +98,33 @@ func TestCreateDino(t *testing.T) {
 		require.Equal(t, http.StatusBadRequest, tErr.Err.StatusCode)
 		assert.Contains(t, tErr.Err.Details, "diet")
 	})
+
+	t.Run("create dino invalid species diet", func(t *testing.T) {
+		// Setup.
+		input := v1.CreateDinoRequest{
+			Name:    "Gerber",
+			Species: dino.DinoSpeciesAnkylosaurus,
+			Diet:    dino.DietTypeCarnivore,
+		}
+		ctrl := v1.Controller{}
+
+		bs, err := json.Marshal(input)
+		require.NoError(t, err)
+
+		w := httptest.NewRecorder()
+		r, err := http.NewRequestWithContext(ctx, http.MethodPost, "/v1/dinosaurs", bytes.NewBuffer(bs))
+		require.NoError(t, err)
+
+		// Execute.
+		err = ctrl.CreateDino(ctx, w, r)
+
+		// Validate.
+		require.Error(t, err)
+		tErr, ok := err.(api.HTTPError)
+		require.True(t, ok)
+		require.Equal(t, http.StatusBadRequest, tErr.Err.StatusCode)
+		assert.Contains(t, tErr.Err.Details, "species diet")
+	})
 }
 
 func TestUpdateDino(t *testing.T) {

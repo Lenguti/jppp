@@ -23,7 +23,7 @@ func NewStore(db *db.DB) *Store {
 	}
 }
 
-// Create - will insert a new cage record.
+// Create - will insert a new dino record.
 func (s *Store) Create(ctx context.Context, d dino.Dinosaur) error {
 	dbDino := toDBDino(d)
 	const q = `
@@ -88,7 +88,7 @@ func (s *Store) UpdateName(ctx context.Context, id, name string, ts time.Time) e
 	WHERE id = :id
 	`
 	if err := s.db.Exec(ctx, q, map[string]any{"name": name, "updated_at": ts.Unix(), "id": id}); err != nil {
-		return fmt.Errorf("get: failed to update dino name: %w", err)
+		return fmt.Errorf("update name: failed to update dino name: %w", err)
 	}
 	return nil
 }

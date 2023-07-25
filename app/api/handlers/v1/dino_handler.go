@@ -25,12 +25,17 @@ func (cdr *CreateDinoRequest) validate() *api.ValidationError {
 		e.Add("name", "is required")
 	}
 
-	if err := dino.ParseSpecies(cdr.Species); err != nil {
+	dinoDiet, err := dino.ParseSpecies(cdr.Species)
+	if err != nil {
 		e.Add("species", "is invalid")
 	}
 
 	if err := dino.ParseDiet(cdr.Diet); err != nil {
 		e.Add("diet", "is invalid")
+	}
+
+	if dinoDiet != dino.Diet(cdr.Diet) {
+		e.Add("species diet", "is invalid")
 	}
 
 	return e
@@ -128,7 +133,7 @@ func (c *Controller) ListDinos(ctx context.Context, w http.ResponseWriter, r *ht
 		return api.InternalServerError("Error.", err, nil)
 	}
 
-	c.log.Info().Msg("Successfully listed Dino.")
+	c.log.Info().Msg("Successfully listed Dinos.")
 	return api.Respond(w, http.StatusOK, ListDinosResponse{Dinosaurs: toClientDinos(ds)})
 }
 
@@ -191,7 +196,7 @@ type ListCageDinosaursResponse struct {
 
 // ListCageDinosaurs - invoked by GET /v1/cages/:id/dinosaurs.
 func (c *Controller) ListCageDinosaurs(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	c.log.Info().Msg("Listing Dinosaurs for cage.")
+	c.log.Info().Msg("Listing Dinosaurs for Cage.")
 
 	cageIDStr := api.PathParam(r, idPathParam)
 	cageID, err := uuid.Parse(cageIDStr)
@@ -208,10 +213,10 @@ func (c *Controller) ListCageDinosaurs(ctx context.Context, w http.ResponseWrite
 
 	dns, err := c.Dino.ListByCageID(ctx, cageID, filters...)
 	if err != nil {
-		c.log.Err(err).Msg("Unable to list dinosaurs for cage.")
+		c.log.Err(err).Msg("Unable to list dinosaurs for Cage.")
 		return api.InternalServerError("Error.", err, nil)
 	}
 
-	c.log.Info().Msg("Successfully listed Dinosaurs for cage.")
+	c.log.Info().Msg("Successfully listed Dinosaurs for Cage.")
 	return api.Respond(w, http.StatusOK, ListCageDinosaursResponse{Dinosaurs: toClientDinos(dns)})
 }

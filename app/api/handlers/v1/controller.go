@@ -12,6 +12,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// Controller - represents our handler service orchestrator.
 type Controller struct {
 	Cage *cage.Core
 	Dino *dino.Core
@@ -22,6 +23,7 @@ type Controller struct {
 	router *api.Router
 }
 
+// NewController - initializes a new controller with all its services.
 func NewController(log zerolog.Logger, cfg Config) (*Controller, error) {
 	ddb, err := db.New(db.Config{
 		User:         cfg.DBUser,

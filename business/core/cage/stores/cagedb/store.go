@@ -61,7 +61,7 @@ func (s *Store) UpdateStatus(ctx context.Context, id, status string, ts time.Tim
 	WHERE id = :id
 	`
 	if err := s.db.Exec(ctx, q, map[string]any{"status": status, "updated_at": ts.Unix(), "id": id}); err != nil {
-		return fmt.Errorf("get: failed to update cage status: %w", err)
+		return fmt.Errorf("update status: failed to update cage status: %w", err)
 	}
 	return nil
 }

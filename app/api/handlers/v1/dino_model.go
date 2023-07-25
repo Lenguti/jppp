@@ -7,6 +7,7 @@ import (
 	"github.com/lenguti/jppp/business/core/dino"
 )
 
+// ClientDino - represents our client dinosaur model.
 type ClientDino struct {
 	ID        string `json:"id"`
 	CageID    string `json:"cage_id,omitempty"`
@@ -26,6 +27,7 @@ func toCoreNewDino(input CreateDinoRequest) dino.NewDino {
 	return newDino
 }
 
+// ClientDinoSpecies - represents available dinos, their species, and diet.
 type ClientDinoSpecies struct {
 	Species string `json:"species"`
 	Diet    string `json:"diet"`

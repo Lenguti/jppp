@@ -122,7 +122,7 @@ func (c *Core) AddDino(ctx context.Context, id uuid.UUID, dinoID uuid.UUID) (Cag
 func (c *Core) RemoveDino(ctx context.Context, id uuid.UUID, dinoID uuid.UUID) (Cage, error) {
 	cge, err := c.Get(ctx, id)
 	if err != nil {
-		return Cage{}, fmt.Errorf("add dino: unable to fetch cage: %w", err)
+		return Cage{}, fmt.Errorf("remove dino: unable to fetch cage: %w", err)
 	}
 
 	if cge.CurrentCapacity == 0 {
@@ -131,7 +131,7 @@ func (c *Core) RemoveDino(ctx context.Context, id uuid.UUID, dinoID uuid.UUID) (
 
 	d, err := c.dino.Get(ctx, dinoID)
 	if err != nil {
-		return Cage{}, fmt.Errorf("add dino: unable to fetch dino: %w", err)
+		return Cage{}, fmt.Errorf("remove dino: unable to fetch dino: %w", err)
 	}
 
 	now := time.Now().UTC()
