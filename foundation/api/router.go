@@ -43,6 +43,7 @@ func (rr *Router) handle(method string, path string, h Handler) {
 	hh := func(w http.ResponseWriter, r *http.Request) {
 		if err := h(r.Context(), w, r); err != nil {
 			if e, ok := err.(HTTPError); ok {
+				fmt.Println(e.Err.StatusCode)
 				Respond(w, e.Err.StatusCode, e)
 				return
 			}

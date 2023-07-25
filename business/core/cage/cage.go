@@ -82,7 +82,7 @@ func (c *Core) AddDino(ctx context.Context, id uuid.UUID, dinoID uuid.UUID) (Cag
 		return Cage{}, core.ErrInvalidCagePowerDown
 	}
 
-	if cge.CurrentCapacity == cge.Capacity {
+	if cge.CurrentCapacity >= cge.Capacity {
 		return Cage{}, core.ErrInvalidCageAtCapacity
 	}
 

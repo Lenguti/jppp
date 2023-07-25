@@ -18,3 +18,6 @@ run:
 stop:
 	@docker compose down
 
+.PHONY : test
+test   :
+	@CGO_ENABLED=$(CGO_ENABLED) go test ./... --cover

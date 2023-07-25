@@ -168,9 +168,6 @@ func listClauseBuilder(filters ...core.Filter) (string, []string) {
 			b.WriteString(fmt.Sprintf(c, i+1))
 			vals = append(vals, filters[i].Value)
 		}
-		if i != len(filters)-1 {
-			b.WriteString(" AND ")
-		}
 	}
 	return b.String(), vals
 }
