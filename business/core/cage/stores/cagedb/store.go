@@ -2,6 +2,8 @@ package cagedb
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -75,6 +77,9 @@ func (s *Store) Get(ctx context.Context, id string) (cage.Cage, error) {
 	`
 	var out dbCage
 	if err := s.db.Get(ctx, &out, q, id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return cage.Cage{}, core.ErrNotFound
+		}
 		return cage.Cage{}, fmt.Errorf("get: failed to fetch cage: %w", err)
 	}
 	return toCoreCage(out), nil

@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strings"
 
@@ -111,6 +112,9 @@ func (c *Controller) GetDino(ctx context.Context, w http.ResponseWriter, r *http
 	d, err := c.Dino.Get(ctx, id)
 	if err != nil {
 		c.log.Err(err).Msg("Unable to fetch dino.")
+		if errors.Is(err, core.ErrNotFound) {
+			return api.NotFoundError("Item not found.", err, nil)
+		}
 		return api.InternalServerError("Error.", err, nil)
 	}
 
@@ -182,6 +186,9 @@ func (c *Controller) UpdateDino(ctx context.Context, w http.ResponseWriter, r *h
 	d, err := c.Dino.UpdateName(ctx, id, input.Name)
 	if err != nil {
 		c.log.Err(err).Msg("Unable to update dino.")
+		if errors.Is(err, core.ErrNotFound) {
+			return api.NotFoundError("Item not found.", err, nil)
+		}
 		return api.InternalServerError("Error.", err, nil)
 	}
 

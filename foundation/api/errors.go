@@ -8,6 +8,7 @@ import (
 const (
 	BadRequest     = "BAD_REQUEST"
 	InternalServer = "INTERNAL_SERVER_ERROR"
+	NotFound       = "NOT_FOUND"
 )
 
 // HTTPError - represnts a standard error structure for the api.
@@ -100,6 +101,11 @@ func BadRequestError(msg string, err error, details map[string]any) HTTPError {
 // InternalServerError - returns a new instance of the error with an internal server error message and status codes.
 func InternalServerError(msg string, err error, details map[string]any) HTTPError {
 	return buildError(http.StatusInternalServerError, InternalServer, msg, err, details)
+}
+
+// NotFoundError - returns a new instance of the error with an not found error message and status codes.
+func NotFoundError(msg string, err error, details map[string]any) HTTPError {
+	return buildError(http.StatusNotFound, NotFound, msg, err, details)
 }
 
 func buildError(statusCode int, code, msg string, err error, details map[string]any) HTTPError {

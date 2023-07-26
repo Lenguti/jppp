@@ -26,4 +26,7 @@ const (
 
 	// ErrInvalidCageInvalidRemoval represents an unable to remove dino from cage error.
 	ErrInvalidCageInvalidRemoval = Error("unable to remove dinosaurs from an empty cage")
+
+	// ErrNotFound represents an item not found.
+	ErrNotFound = Error("item not found")
 )

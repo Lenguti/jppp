@@ -2,6 +2,8 @@ package dinodb
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -60,6 +62,9 @@ func (s *Store) Get(ctx context.Context, id string) (dino.Dinosaur, error) {
 	`
 	var out dbDino
 	if err := s.db.Get(ctx, &out, q, id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return dino.Dinosaur{}, core.ErrNotFound
+		}
 		return dino.Dinosaur{}, fmt.Errorf("get: failed to fetch dino: %w", err)
 	}
 	return toCoreDino(out), nil

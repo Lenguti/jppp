@@ -58,4 +58,16 @@ Dinosaur
     "createdAt": int,
     "updatedAt": int
 }
+
+API Error
+{
+  "error": {
+    "code": "string ENUM", (BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND)
+    "message": "string",
+    "status_code": int,
+    "details": {
+      "string": "string"
+    }
+  }
+}
 ```
